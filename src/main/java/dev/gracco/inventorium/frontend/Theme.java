@@ -8,8 +8,10 @@ import java.io.File;
 public class Theme {
     // Colors
     public static final Color COLOR_PRIMARY = new Color(0xF0A92D);
-    public static final Color COLOR_SECONDARY = new Color(0xC9821A);
+    public static final Color COLOR_SECONDARY = new Color(0xD9901F);
+    public static final Color COLOR_TERTIARY = new Color(0xC9821A);
     public static final Color COLOR_BACKGROUND = new Color(0xFDFDFD);
+    public static final Color COLOR_UNFOCUSED = new Color(0x7E7E7E);
 
     // Fonts
     public static final Font BOLD;
@@ -22,6 +24,7 @@ public class Theme {
     // Images
     public static final ImageIcon ICON_DARK = new ImageIcon("src/main/resources/images/icon-dark.png");
     public static final ImageIcon ICON_LIGHT = new ImageIcon("src/main/resources/images/icon-light.png");
+    public static final ImageIcon BACKGROUND_LOGIN = new ImageIcon("src/main/resources/images/bg-login.png");
 
     static {
         try {

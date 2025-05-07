@@ -1,6 +1,8 @@
 package dev.gracco.inventorium.frontend.forms;
 
 import dev.gracco.inventorium.frontend.Theme;
+import dev.gracco.inventorium.frontend.swing.JPanelImage;
+import dev.gracco.inventorium.frontend.swing.JTextFieldPrompt;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -8,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -40,6 +43,7 @@ public class LoginWindow extends JFrame {
         submitButton.setFont(Theme.REGULAR.deriveFont(20f));
         submitButton.setBackground(Theme.COLOR_PRIMARY);
         submitButton.setFocusPainted(false);
+        submitButton.setBorderPainted(false);
         submitButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -53,12 +57,12 @@ public class LoginWindow extends JFrame {
 
             @Override
             public void mousePressed(MouseEvent e) {
-
+                submitButton.setBackground(Theme.COLOR_TERTIARY);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-
+                submitButton.setBackground(Theme.COLOR_PRIMARY);
             }
 
             @Override
@@ -70,19 +74,24 @@ public class LoginWindow extends JFrame {
         labelUsername.setFont(Theme.REGULAR.deriveFont(20f));
         labelUsername.setText("Username or Email:");
         inputUsername.setFont(Theme.REGULAR.deriveFont(18f));
-        inputUsername.setToolTipText("Username or Email");
+        inputUsername.setForeground(Color.BLACK);
+        JTextFieldPrompt promptUsername = new JTextFieldPrompt("Username or Email", inputUsername);
 
         labelPassword.setFont(Theme.REGULAR.deriveFont(20f));
         labelPassword.setText("Password:");
         inputPassword.setFont(Theme.REGULAR.deriveFont(18f));
-        inputPassword.setToolTipText("Password");
-
+        inputPassword.setForeground(Color.BLACK);
+        JTextFieldPrompt promptPassword = new JTextFieldPrompt("Password", inputPassword);
 
         // Window
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 700);
+        setSize(700, 700);
         setLocationRelativeTo(null);
         setResizable(false);
         setVisible(true);
+    }
+
+    private void createUIComponents() {
+        mainPanel = new JPanelImage(Theme.BACKGROUND_LOGIN.getImage());
     }
 }
