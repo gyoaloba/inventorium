@@ -1,49 +1,48 @@
-package dev.gracco.inventorium.frontend.forms;
+package dev.gracco.inventorium.frontend.pages;
 
 import dev.gracco.inventorium.frontend.Theme;
+import dev.gracco.inventorium.frontend.swing.JButtonRounded;
 import dev.gracco.inventorium.frontend.swing.JPanelImage;
 import dev.gracco.inventorium.frontend.swing.JTextFieldPrompt;
 
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class LoginWindow extends JFrame {
     private JPanel mainPanel;
-    private JLabel mainTitle;
-    private JLabel mainSubtitle;
-    private JTextField inputUsername;
+    private JFormattedTextField inputEmail;
     private JPasswordField inputPassword;
     private JButton submitButton;
-    private JLabel labelUsername;
+    private JLabel pageTitle;
+    private JLabel pageSubtitle;
+    private JLabel labelEmail;
     private JLabel labelPassword;
 
     public LoginWindow() {
         setContentPane(mainPanel);
 
-        // Theme
+        //Theme
         setTitle(Theme.WINDOW_TITLE);
         getContentPane().setBackground(Theme.COLOR_BACKGROUND);
         setIconImage(Theme.ICON_DARK.getImage());
 
-        // Elements
-        mainTitle.setText("INVENTORIUM");
-        mainTitle.setFont(Theme.BOLD.deriveFont(90f));
+        //Elements
+        pageTitle.setText("INVENTORIUM");
+        pageTitle.setFont(Theme.BOLD.deriveFont(90f));
 
-        mainSubtitle.setText("The Inventory Management System");
-        mainSubtitle.setFont(Theme.REGULAR.deriveFont(30f));
+        pageSubtitle.setText("The Inventory Management System");
+        pageSubtitle.setFont(Theme.REGULAR.deriveFont(30f));
 
         submitButton.setText("Login");
         submitButton.setFont(Theme.REGULAR.deriveFont(20f));
         submitButton.setBackground(Theme.COLOR_PRIMARY);
         submitButton.setFocusPainted(false);
-        submitButton.setBorderPainted(false);
         submitButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -71,19 +70,17 @@ public class LoginWindow extends JFrame {
             }
         });
 
-        labelUsername.setFont(Theme.REGULAR.deriveFont(20f));
-        labelUsername.setText("Username or Email:");
-        inputUsername.setFont(Theme.REGULAR.deriveFont(18f));
-        inputUsername.setForeground(Color.BLACK);
-        JTextFieldPrompt promptUsername = new JTextFieldPrompt("Username or Email", inputUsername);
+        labelEmail.setFont(Theme.REGULAR.deriveFont(20f));
+        labelEmail.setText("Email:");
+        inputEmail.setFont(Theme.REGULAR.deriveFont(18f));
+        new JTextFieldPrompt("Enter your email", inputEmail);
 
         labelPassword.setFont(Theme.REGULAR.deriveFont(20f));
         labelPassword.setText("Password:");
         inputPassword.setFont(Theme.REGULAR.deriveFont(18f));
-        inputPassword.setForeground(Color.BLACK);
-        JTextFieldPrompt promptPassword = new JTextFieldPrompt("Password", inputPassword);
+        new JTextFieldPrompt("Enter your password", inputPassword);
 
-        // Window
+        //Window
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(700, 700);
         setLocationRelativeTo(null);
@@ -93,5 +90,6 @@ public class LoginWindow extends JFrame {
 
     private void createUIComponents() {
         mainPanel = new JPanelImage(Theme.BACKGROUND_LOGIN.getImage());
+        submitButton = new JButtonRounded();
     }
 }

@@ -3,13 +3,13 @@ package dev.gracco.inventorium.frontend;
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.Font;
-import java.io.File;
+import java.util.Objects;
 
 public class Theme {
     // Colors
     public static final Color COLOR_PRIMARY = new Color(0xF0A92D);
     public static final Color COLOR_SECONDARY = new Color(0xD9901F);
-    public static final Color COLOR_TERTIARY = new Color(0xC9821A);
+    public static final Color COLOR_TERTIARY = new Color(0xAB7118);
     public static final Color COLOR_BACKGROUND = new Color(0xFDFDFD);
     public static final Color COLOR_UNFOCUSED = new Color(0x7E7E7E);
 
@@ -22,15 +22,14 @@ public class Theme {
     public static final String WINDOW_TITLE = "Inventorium: Inventory Management System";
 
     // Images
-    public static final ImageIcon ICON_DARK = new ImageIcon("src/main/resources/images/icon-dark.png");
-    public static final ImageIcon ICON_LIGHT = new ImageIcon("src/main/resources/images/icon-light.png");
-    public static final ImageIcon BACKGROUND_LOGIN = new ImageIcon("src/main/resources/images/bg-login.png");
+    public static final ImageIcon ICON_DARK = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/icon.png")));
+    public static final ImageIcon BACKGROUND_LOGIN = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/bg-login.png")));
 
     static {
         try {
-            BOLD = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Poppins-Bold.ttf"));
-            ITALIC = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Poppins-Italic.ttf"));
-            REGULAR = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Poppins-Regular.ttf"));
+            BOLD = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(Theme.class.getResourceAsStream("/fonts/Poppins-Bold.ttf")));
+            ITALIC = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(Theme.class.getResourceAsStream("/fonts/Poppins-Italic.ttf")));
+            REGULAR = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(Theme.class.getResourceAsStream("/fonts/Poppins-Regular.ttf")));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
