@@ -39,7 +39,7 @@ public class JTextFieldPrompt extends JLabel implements FocusListener, DocumentL
 
         setText(text);
         setFont(component.getFont());
-        setForeground(Theme.COLOR_UNFOCUSED);
+        setForeground(Theme.COLOR_UNFOCUSED_TEXT);
         setBorder(new EmptyBorder(component.getInsets()));
         setHorizontalAlignment(LEADING);
 

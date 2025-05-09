@@ -1,5 +1,6 @@
 package dev.gracco.inventorium.frontend.pages;
 
+import dev.gracco.inventorium.connection.DatabaseManager;
 import dev.gracco.inventorium.frontend.Theme;
 import dev.gracco.inventorium.frontend.swing.JButtonRounded;
 import dev.gracco.inventorium.frontend.swing.JPanelImage;
@@ -66,7 +67,7 @@ public class LoginWindow extends JFrame {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-
+                login();
             }
         });
 
@@ -74,11 +75,13 @@ public class LoginWindow extends JFrame {
         labelEmail.setText("Email:");
         inputEmail.setFont(Theme.REGULAR.deriveFont(18f));
         new JTextFieldPrompt("Enter your email", inputEmail);
+        inputEmail.addActionListener(e -> inputPassword.grabFocus());
 
         labelPassword.setFont(Theme.REGULAR.deriveFont(20f));
         labelPassword.setText("Password:");
         inputPassword.setFont(Theme.REGULAR.deriveFont(18f));
         new JTextFieldPrompt("Enter your password", inputPassword);
+        inputPassword.addActionListener(e -> login());
 
         //Window
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -86,6 +89,16 @@ public class LoginWindow extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
         setVisible(true);
+    }
+
+    private void login() {
+        String email = inputEmail.getText();
+        String password = new String(inputPassword.getPassword());
+
+        if (DatabaseManager.login(this, email, password)) {
+            dispose();
+            new MainWindow();
+        }
     }
 
     private void createUIComponents() {

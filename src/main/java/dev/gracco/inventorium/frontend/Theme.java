@@ -1,5 +1,7 @@
 package dev.gracco.inventorium.frontend;
 
+import dev.gracco.inventorium.utils.Utilities;
+
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.Font;
@@ -11,7 +13,8 @@ public class Theme {
     public static final Color COLOR_SECONDARY = new Color(0xD9901F);
     public static final Color COLOR_TERTIARY = new Color(0xAB7118);
     public static final Color COLOR_BACKGROUND = new Color(0xFDFDFD);
-    public static final Color COLOR_UNFOCUSED = new Color(0x7E7E7E);
+    public static final Color COLOR_BACKGROUND_UNFOCUSED = new Color(0xABABAB);
+    public static final Color COLOR_UNFOCUSED_TEXT = new Color(0x7E7E7E);
 
     // Fonts
     public static final Font BOLD;
@@ -31,7 +34,8 @@ public class Theme {
             ITALIC = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(Theme.class.getResourceAsStream("/fonts/Poppins-Italic.ttf")));
             REGULAR = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(Theme.class.getResourceAsStream("/fonts/Poppins-Regular.ttf")));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Utilities.sendFatalError(e);
+            throw new ExceptionInInitializerError(e);
         }
     }
 }

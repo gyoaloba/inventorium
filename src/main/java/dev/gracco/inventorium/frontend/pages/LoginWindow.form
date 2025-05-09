@@ -15,7 +15,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Label"/>
+          <text value=""/>
         </properties>
       </component>
       <component id="b416b" class="javax.swing.JLabel" binding="pageSubtitle">
@@ -23,7 +23,7 @@
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Label"/>
+          <text value=""/>
         </properties>
       </component>
       <component id="d3ea" class="javax.swing.JLabel" binding="labelEmail">
@@ -31,7 +31,8 @@
           <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Label"/>
+          <labelFor value="2c96a"/>
+          <text value=""/>
         </properties>
       </component>
       <component id="2c96a" class="javax.swing.JFormattedTextField" binding="inputEmail">
@@ -47,7 +48,8 @@
           <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Label"/>
+          <labelFor value="978f9"/>
+          <text value=""/>
         </properties>
       </component>
       <component id="978f9" class="javax.swing.JPasswordField" binding="inputPassword">
@@ -66,7 +68,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Button"/>
+          <text value=""/>
         </properties>
       </component>
       <vspacer id="b6991">
