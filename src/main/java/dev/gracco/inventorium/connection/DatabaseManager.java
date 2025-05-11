@@ -1,6 +1,5 @@
 package dev.gracco.inventorium.connection;
 
-import dev.gracco.inventorium.utils.Security;
 import dev.gracco.inventorium.utils.Utilities;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -26,17 +25,6 @@ public class DatabaseManager {
     @Getter @Nullable private static Department department;
 
     public static boolean login(JFrame frame, String email, String password) {
-        if (email.isEmpty() || password.isEmpty()) {
-            Utilities.sendError(frame, "Please enter your email and password!");
-            return false;
-        } else if (!email.matches(Security.EMAIL_REGEX)) {
-            Utilities.sendError(frame, "Enter a valid email!");
-            return false;
-        } else if (password.length() < 8) {
-            Utilities.sendError(frame, "Password must contain more than 8 characters!");
-            return false;
-        }
-
         ResultSet resultSet = DatabaseConnection.getLoginResultSet(email, password);
         if (resultSet == null) {
             Utilities.sendError(frame, "Invalid email or password");

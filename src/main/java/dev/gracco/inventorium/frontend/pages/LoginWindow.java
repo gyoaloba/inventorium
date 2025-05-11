@@ -6,6 +6,8 @@ import dev.gracco.inventorium.frontend.Theme;
 import dev.gracco.inventorium.frontend.swing.JButtonRounded;
 import dev.gracco.inventorium.frontend.swing.JPanelImage;
 import dev.gracco.inventorium.frontend.swing.JTextFieldPrompt;
+import dev.gracco.inventorium.utils.Security;
+import dev.gracco.inventorium.utils.Utilities;
 
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
@@ -14,8 +16,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -44,14 +44,6 @@ public class LoginWindow extends JFrame {
         pageSubtitle.setText("The Inventory Management System");
         pageSubtitle.setFont(Theme.REGULAR.deriveFont(30f));
 
-        JButtonRounded.beautify(submitButton, "Login");
-        submitButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                login();
-            }
-        });
-
         labelEmail.setFont(Theme.REGULAR.deriveFont(20f));
         labelEmail.setText("Email:");
         inputEmail.setFont(Theme.REGULAR.deriveFont(18f));
@@ -62,7 +54,29 @@ public class LoginWindow extends JFrame {
         labelPassword.setText("Password:");
         inputPassword.setFont(Theme.REGULAR.deriveFont(18f));
         new JTextFieldPrompt("Enter your password", inputPassword);
-        inputPassword.addActionListener(e -> login());
+        inputPassword.addActionListener(e -> submitButton.doClick());
+
+        JButtonRounded.beautify(submitButton, "Login");
+        submitButton.addActionListener(e -> {
+            String email = inputEmail.getText();
+            String password = new String(inputPassword.getPassword());
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Utilities.sendError(this, "Please enter your email and password!");
+                return;
+            } else if (!email.matches(Security.EMAIL_REGEX)) {
+                Utilities.sendError(this, "Enter a valid email!");
+                return;
+            } else if (password.length() < 8) {
+                Utilities.sendError(this, "Password must contain more than 8 characters!");
+                return;
+            }
+
+            if (DatabaseManager.login(this, email, password)) {
+                dispose();
+                new MainWindow();
+            }
+        });
 
         //Window
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -82,16 +96,6 @@ public class LoginWindow extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
         setVisible(true);
-    }
-
-    private void login() {
-        String email = inputEmail.getText();
-        String password = new String(inputPassword.getPassword());
-
-        if (DatabaseManager.login(this, email, password)) {
-            dispose();
-            new MainWindow();
-        }
     }
 
     private void createUIComponents() {
