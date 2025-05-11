@@ -28,6 +28,11 @@ public class DatabaseConnection {
         }
     }
 
+    public static void close() {
+        try { connection.close(); }
+        catch (SQLException e) { Utilities.sendFatalError(e); }
+    }
+
     @Nullable
     public static ResultSet getLoginResultSet(String email, String password) {
         try {

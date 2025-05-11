@@ -1,9 +1,13 @@
 package dev.gracco.inventorium.frontend.swing;
 
+import dev.gracco.inventorium.frontend.Theme;
+
 import javax.swing.JButton;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class JButtonRounded extends JButton {
     public JButtonRounded() {
@@ -32,5 +36,34 @@ public class JButtonRounded extends JButton {
     @Override
     protected void paintBorder(Graphics g) {
         // no border
+    }
+
+    // Has to be static cuz I can't directly assign this class to the JButton
+    public static void beautify(JButton button, String label){
+        button.setText(label);
+        button.setFont(Theme.REGULAR.deriveFont(20f));
+        button.setBackground(Theme.COLOR_PRIMARY);
+        button.setFocusPainted(false);
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(Theme.COLOR_SECONDARY);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(Theme.COLOR_PRIMARY);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                button.setBackground(Theme.COLOR_TERTIARY);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                button.setBackground(Theme.COLOR_PRIMARY);
+            }
+        });
     }
 }

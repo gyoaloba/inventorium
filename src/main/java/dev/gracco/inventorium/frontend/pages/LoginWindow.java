@@ -1,5 +1,6 @@
 package dev.gracco.inventorium.frontend.pages;
 
+import dev.gracco.inventorium.connection.DatabaseConnection;
 import dev.gracco.inventorium.connection.DatabaseManager;
 import dev.gracco.inventorium.frontend.Theme;
 import dev.gracco.inventorium.frontend.swing.JButtonRounded;
@@ -10,10 +11,13 @@ import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class LoginWindow extends JFrame {
     private JPanel mainPanel;
@@ -40,31 +44,8 @@ public class LoginWindow extends JFrame {
         pageSubtitle.setText("The Inventory Management System");
         pageSubtitle.setFont(Theme.REGULAR.deriveFont(30f));
 
-        submitButton.setText("Login");
-        submitButton.setFont(Theme.REGULAR.deriveFont(20f));
-        submitButton.setBackground(Theme.COLOR_PRIMARY);
-        submitButton.setFocusPainted(false);
+        JButtonRounded.beautify(submitButton, "Login");
         submitButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                submitButton.setBackground(Theme.COLOR_SECONDARY);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                submitButton.setBackground(Theme.COLOR_PRIMARY);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                submitButton.setBackground(Theme.COLOR_TERTIARY);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                submitButton.setBackground(Theme.COLOR_PRIMARY);
-            }
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 login();
@@ -84,7 +65,19 @@ public class LoginWindow extends JFrame {
         inputPassword.addActionListener(e -> login());
 
         //Window
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e){
+                int choice = JOptionPane.showConfirmDialog(LoginWindow.this, "Are you sure you exit?", "Exit", JOptionPane.YES_NO_OPTION);
+
+                if (choice == JOptionPane.YES_OPTION) {
+                    DatabaseConnection.close();
+                    dispose();
+                    System.exit(0);
+                }
+            }
+        });
         setSize(700, 700);
         setLocationRelativeTo(null);
         setResizable(false);

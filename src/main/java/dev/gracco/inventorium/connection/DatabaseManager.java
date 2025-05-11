@@ -57,4 +57,12 @@ public class DatabaseManager {
 
         return true;
     }
+
+    public static void logout(){
+        level = null;
+        userUUID = null;
+        lastName = null;
+        firstName = null;
+        department = null;
+    }
 }
