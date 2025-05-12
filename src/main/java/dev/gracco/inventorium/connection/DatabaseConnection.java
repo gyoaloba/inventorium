@@ -12,6 +12,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,8 @@ public class DatabaseConnection {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/inventorium";
     private static final String DB_USER = "inventorium";
     private static final String DB_PASSWORD = "LebronI$MyG0a7";
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy hh:mm a");
 
     public static void initialize() {
         try {
@@ -173,18 +177,19 @@ public class DatabaseConnection {
             List<String[]> rows = new ArrayList<>();
 
             PreparedStatement statement = connection.prepareStatement("""
-            SELECT requests.request_id, CONCAT(users.first_name, ' ', users.last_name) AS full_name, requests.request
+            SELECT requests.request_id, requests.created_at, CONCAT(users.first_name, ' ', users.last_name) AS full_name
             FROM requests INNER JOIN users ON requests.user_uuid = users.user_uuid
-            WHERE requests.dept_id = ?;""");
+            WHERE requests.dept_id = ? ORDER BY request_id DESC;""");
 
             statement.setString(1, UserManager.getDepartment().toString());
 
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                String dept = rs.getString("dept_id");
-                String item = rs.getString("item_name");
-                int amount = rs.getInt("amount");
+                String request_id = rs.getString("request_id");
+                String date = DATE_FORMAT.format(rs.getTimestamp("created_at"));
+                String name = rs.getString("full_name");
+                rows.add(new String[]{request_id, date, name});
             }
 
             return rows.toArray(new String[0][]);
@@ -194,4 +199,80 @@ public class DatabaseConnection {
         }
     }
 
+    public static List<String> getItems() {
+        try {
+            List<String> items = new ArrayList<>();
+            PreparedStatement statement = connection.prepareStatement("SELECT item_name FROM items ORDER BY item_name");
+            ResultSet resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+                items.add(resultSet.getString("item_name"));
+            }
+
+            return items;
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+            return null;
+        }
+    }
+
+    public static int getItemCount(String item) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("""
+                    SELECT amount
+                    FROM inventory INNER JOIN items ON inventory.item_id = items.item_id
+                    WHERE dept_id = ? AND items.item_name = ?
+                    """);
+            statement.setString(1, UserManager.getDepartment().toString());
+            statement.setString(2, item.toUpperCase());
+            ResultSet resultSet = statement.executeQuery();
+
+            return resultSet.next() ? resultSet.getInt("amount") : 0;
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+            return 0;
+        }
+    }
+
+    public static void setItemCount(String item, int amount) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("""
+                    UPDATE inventory
+                    INNER JOIN items ON inventory.item_id = items.item_id
+                    SET inventory.amount = ?
+                    WHERE items.item_name = ? AND inventory.dept_id = ?;
+            """);
+            statement.setString(1, String.valueOf(amount));
+            statement.setString(2, item.toString().toUpperCase());
+            statement.setString(3, UserManager.getDepartment().toString());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+        }
+    }
+
+    public static void setNewItemCount(String item, int amount) {
+        try {
+            PreparedStatement stmtItems = connection.prepareStatement(
+                    "INSERT INTO items (item_name) VALUES (?)",
+                    Statement.RETURN_GENERATED_KEYS
+            );
+
+            stmtItems.setString(1, item.toString().toUpperCase());
+            stmtItems.executeUpdate();
+
+            ResultSet rs = stmtItems.getGeneratedKeys();
+            int itemId;
+            if (rs.next()) itemId = rs.getInt(1);
+            else throw new SQLException("Key was not returned");
+
+            PreparedStatement stmtInventory = connection.prepareStatement("INSERT INTO inventory(item_id, dept_id, amount) VALUES (?, ?, ?)");
+            stmtInventory.setString(1, String.valueOf(itemId));
+            stmtInventory.setString(2, UserManager.getDepartment().toString());
+            stmtInventory.setInt(3, amount);
+            stmtInventory.executeUpdate();
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+        }
+    }
 }

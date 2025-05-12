@@ -10,16 +10,19 @@ import dev.gracco.inventorium.frontend.swing.JTextFieldPrompt;
 import dev.gracco.inventorium.utils.Utilities;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -55,22 +58,28 @@ public class MainWindow extends JFrame {
     private JTable homeTable;
     private JLabel homeTableLabel;
     private JScrollPane homeScrollPane;
-    private JTable logsHeadTable;
     private JTable requestHeadTable;
     private JButton reloadRequests;
-    private JButton previousLogs;
-    private JButton nextLogs;
     private JButton submitRequest;
     private JLabel labelRequest;
     private JScrollPane requestPane;
     private JTextArea requestTextArea;
     private JLabel labelHeadRequest;
     private JScrollPane requestHeadPane;
-    private JLabel labelLogsHead;
-    private JScrollPane logsHeadPane;
     private JPanel requestPanel;
     private JLabel welcomeDept;
     private JTextField searchInventoryHome;
+    private JComboBox itemCombo;
+    private JButton updateButton;
+    private JTextField inputItemName;
+    private JButton createButton;
+    private JLabel labelUpdate;
+    private JLabel labelComboItem;
+    private JLabel labelCreate;
+    private JLabel labelCreateName;
+    private JSpinner updateSpinner;
+    private JSpinner createSpinner;
+    private JPanel headItemsPanel;
 
     public MainWindow(){
         setContentPane(mainPanel);
@@ -208,8 +217,67 @@ public class MainWindow extends JFrame {
         tabHead.setBackground(Theme.COLOR_BACKGROUND);
 
         //Requests
+        labelHeadRequest.setText("Requests");
+        labelHeadRequest.setFont(Theme.BOLD.deriveFont(20f));
 
-        //Logs
+        reloadRequests.setFocusPainted(false);
+        JButtonRounded.beautify(reloadRequests, "Reload Requests");
+        reloadRequests.addActionListener(e -> Utilities.populateTable(requestHeadTable, DatabaseConnection.getRequests(), new String[]{"ID", "Created at", "Name"}));
+
+        reloadRequests.doClick();
+        requestHeadTable.setRowHeight(homeTable.getFontMetrics(homeTable.getFont()).getHeight() + 4);
+        requestHeadTable.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
+        requestHeadTable.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
+        requestHeadTable.setFont(Theme.REGULAR.deriveFont(14f));
+
+        //Update
+        labelUpdate.setText("Update Item");
+        labelUpdate.setFont(Theme.BOLD.deriveFont(20f));
+
+        labelComboItem.setText("Choose item");
+        labelComboItem.setFont(Theme.REGULAR.deriveFont(18f));
+
+        DatabaseConnection.getItems().forEach(itemCombo::addItem);
+        itemCombo.setBackground(Theme.COLOR_BACKGROUND);
+        itemCombo.addActionListener(e -> updateSpinner.setValue(DatabaseConnection.getItemCount((String) itemCombo.getSelectedItem())));
+        updateSpinner.setValue(DatabaseConnection.getItemCount((String) itemCombo.getSelectedItem()));
+
+        updateButton.setFocusPainted(false);
+        updateButton.setText("Update");
+        updateButton.addActionListener(e -> {
+            String id = (String) itemCombo.getSelectedItem();
+            int amount = (int) updateSpinner.getValue();
+
+            DatabaseConnection.setItemCount(id, amount);
+            Utilities.sendSuccess(MainWindow.this, "Successfully updated amount to " + amount);
+        });
+
+        labelCreate.setText("Create New Item");
+        labelCreate.setFont(Theme.BOLD.deriveFont(20f));
+
+        labelCreateName.setText("Input non-duplicate name");
+        labelCreateName.setFont(Theme.REGULAR.deriveFont(18f));
+
+        createButton.setFocusPainted(false);
+        createButton.setText("Update");
+        createButton.addActionListener(e -> {
+            String id = inputItemName.getText().trim().toUpperCase();
+            if (id.isEmpty() || id == null) {
+                Utilities.sendError(MainWindow.this, "Item name cannot be empty!");
+                return;
+            }
+            int amount = (int) createSpinner.getValue();
+
+            int choice = JOptionPane.showConfirmDialog(MainWindow.this, "Are you sure you want to add " + id + " to the list of items?", "Create New Item", JOptionPane.OK_CANCEL_OPTION);
+            if (choice == JOptionPane.YES_OPTION) {
+                DatabaseConnection.setNewItemCount(id, amount);
+                itemCombo.addItem(id);
+                inputItemName.setText(null);
+                createSpinner.setValue(1);
+                Utilities.sendSuccess(MainWindow.this, "Successfully updated amount to " + amount);
+            }
+        });
+
     }
 
     private void setupHome(){
@@ -263,9 +331,13 @@ public class MainWindow extends JFrame {
 
     private void createUIComponents() {
         inventoryDisplay = new JPanelImage(Theme.HOME_DESIGN.getImage());
+        headItemsPanel = new JPanelImage(Theme.HOME_DESIGN.getImage());
         settingsImage = new JPanelImage(Theme.SETTINGS_DESIGN.getImage());
         submitRequest = new JButtonRounded();
         submitPassButton = new JButtonRounded();
         logoutButton = new JButtonRounded();
+        reloadRequests = new JButtonRounded();
+        updateSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+        createSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
     }
 }
