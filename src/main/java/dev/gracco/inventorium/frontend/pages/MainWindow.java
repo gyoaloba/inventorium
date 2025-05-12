@@ -29,6 +29,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -80,6 +81,29 @@ public class MainWindow extends JFrame {
     private JSpinner updateSpinner;
     private JSpinner createSpinner;
     private JPanel headItemsPanel;
+    private JPanel adminUsers;
+    private JPanel adminInventory;
+    private JPanel adminCreate;
+    private JTable adminTableUsers;
+    private JTable adminTableInventory;
+    private JTextField inputFirstName;
+    private JTextField inputLastName;
+    private JTextField inputEmail;
+    private JPasswordField inputPassword;
+    private JComboBox userLevelCombo;
+    private JComboBox departmentCombo;
+    private JButton createAccount;
+    private JLabel labelCreateAccount;
+    private JLabel labelFirstName;
+    private JLabel labelLastName;
+    private JLabel labelEmail;
+    private JLabel labelPassword;
+    private JLabel labelUserLevel;
+    private JLabel labelDepartment;
+    private JButton reloadUsers;
+    private JButton reloadInventory;
+    private JLabel labelAdminUsers;
+    private JLabel labelAdminInventory;
 
     public MainWindow(){
         setContentPane(mainPanel);
@@ -211,6 +235,94 @@ public class MainWindow extends JFrame {
 
     private void setupAdmin(){
         tabAdmin.setBackground(Theme.COLOR_BACKGROUND);
+
+        //Users
+        labelAdminUsers.setText("Users Table");
+        labelAdminUsers.setFont(Theme.BOLD.deriveFont(20f));
+
+        reloadUsers.setFocusPainted(false);
+        JButtonRounded.beautify(reloadUsers, "Reload Users Table");
+        reloadUsers.addActionListener(e -> Utilities.populateTable(adminTableUsers, DatabaseConnection.getUsers(), new String[]{"Email", " Level", "Name", "Dept."}));
+
+        reloadUsers.doClick();
+        adminTableUsers.setRowHeight(adminTableUsers.getFontMetrics(adminTableUsers.getFont()).getHeight() + 4);
+        adminTableUsers.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
+        adminTableUsers.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
+        adminTableUsers.setFont(Theme.REGULAR.deriveFont(14f));
+
+        //Inventory
+        labelAdminInventory.setText("Inventory Table");
+        labelAdminInventory.setFont(Theme.BOLD.deriveFont(20f));
+
+        reloadInventory.setFocusPainted(false);
+        JButtonRounded.beautify(reloadInventory, "Reload Inventory Table");
+        reloadInventory.addActionListener(e -> Utilities.populateTable(adminTableInventory, DatabaseConnection.getItems(null), new String[]{"Dept.", " Item Name", "Amount"}));
+
+        reloadInventory.doClick();
+        adminTableInventory.setRowHeight(adminTableInventory.getFontMetrics(adminTableInventory.getFont()).getHeight() + 4);
+        adminTableInventory.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
+        adminTableInventory.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
+        adminTableInventory.setFont(Theme.REGULAR.deriveFont(14f));
+
+        //Create account
+        labelCreateAccount.setText("Create New User");
+        labelCreateAccount.setFont(Theme.BOLD.deriveFont(20f));
+
+        labelFirstName.setText("First Name:");
+        new JTextFieldPrompt( "First Name", inputFirstName);
+
+        labelLastName.setText("Last Name:");
+        new JTextFieldPrompt("Last Name", inputLastName);
+
+        labelEmail.setText("Email:");
+        new JTextFieldPrompt("Email", inputEmail);
+
+        labelPassword.setText("Password:");
+        new JTextFieldPrompt("Password", inputPassword);
+
+        labelUserLevel.setText("User Level:");
+        Arrays.asList(UserManager.UserLevel.values()).forEach(userLevelCombo::addItem);
+        userLevelCombo.setBackground(Theme.COLOR_BACKGROUND);
+
+        labelDepartment.setText("Department");
+        departmentCombo.addItem("NONE");
+        Arrays.asList(DatabaseConnection.Department.values()).forEach(departmentCombo::addItem);
+        departmentCombo.setBackground(Theme.COLOR_BACKGROUND);
+
+        JButtonRounded.beautify(createAccount, "Create Account");
+        createAccount.addActionListener(e -> {
+            String firstName = inputFirstName.getText();
+            String lastName = inputLastName.getText();
+            String email = inputEmail.getText();
+            String password = new String(inputPassword.getPassword());
+            UserManager.UserLevel userLevel = (UserManager.UserLevel) userLevelCombo.getSelectedItem();
+            DatabaseConnection.Department department;
+            try { department = DatabaseConnection.Department.valueOf(departmentCombo.getSelectedItem().toString()); }
+            catch (ClassCastException exc) { department = null; }
+
+            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()){
+                Utilities.sendError(MainWindow.this, "You cannot leave any field as blank!");
+                return;
+            }
+            
+            int choice = JOptionPane.showConfirmDialog(MainWindow.this,
+                    "Create this account?\n\nFirst Name: " + firstName +
+                            "\nLast Name: " + lastName +
+                            "\nEmail: " + email +
+                            "\nPassword: " + password +
+                            "\nUser Level: " + userLevel.toString() +
+                            "\nDepartment: " + (department == null? "NONE" : department.toString())
+                    , "Create Account", JOptionPane.YES_NO_OPTION);
+
+            if (choice == JOptionPane.YES_OPTION) {
+                DatabaseConnection.createAccount(firstName, lastName, email, password, userLevel, department);
+                Utilities.sendSuccess(MainWindow.this, "Successfully created user!");
+                inputFirstName.setText(null);
+                inputLastName.setText(null);
+                inputEmail.setText(null);
+                inputPassword.setText(null);
+            }
+        });
     }
 
     private void setupHead(){
@@ -225,7 +337,7 @@ public class MainWindow extends JFrame {
         reloadRequests.addActionListener(e -> Utilities.populateTable(requestHeadTable, DatabaseConnection.getRequests(), new String[]{"ID", "Created at", "Name"}));
 
         reloadRequests.doClick();
-        requestHeadTable.setRowHeight(homeTable.getFontMetrics(homeTable.getFont()).getHeight() + 4);
+        requestHeadTable.setRowHeight(requestHeadTable.getFontMetrics(requestHeadTable.getFont()).getHeight() + 4);
         requestHeadTable.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
         requestHeadTable.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
         requestHeadTable.setFont(Theme.REGULAR.deriveFont(14f));
@@ -266,6 +378,12 @@ public class MainWindow extends JFrame {
                 Utilities.sendError(MainWindow.this, "Item name cannot be empty!");
                 return;
             }
+
+            else if (DatabaseConnection.getItems().contains(id)){
+                Utilities.sendError(MainWindow.this, "Item already exists!");
+                return;
+            }
+
             int amount = (int) createSpinner.getValue();
 
             int choice = JOptionPane.showConfirmDialog(MainWindow.this, "Are you sure you want to add " + id + " to the list of items?", "Create New Item", JOptionPane.OK_CANCEL_OPTION);
@@ -339,5 +457,8 @@ public class MainWindow extends JFrame {
         reloadRequests = new JButtonRounded();
         updateSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
         createSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
+        createAccount = new JButtonRounded();
+        reloadUsers = new JButtonRounded();
+        reloadInventory = new JButtonRounded();
     }
 }

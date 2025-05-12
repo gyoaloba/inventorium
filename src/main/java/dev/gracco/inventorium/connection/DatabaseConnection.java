@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class DatabaseConnection {
 
@@ -121,13 +122,14 @@ public class DatabaseConnection {
             List<String[]> rows = new ArrayList<>();
 
             PreparedStatement statement;
-            boolean hasDepartment = department == null;
+            boolean nullDepartment = department == null;
 
-            if (hasDepartment) {
+            if (nullDepartment) {
                 statement = connection.prepareStatement("""
                 SELECT inventory.dept_id, items.item_name, inventory.amount
                 FROM inventory
-                INNER JOIN items ON inventory.item_id = items.item_id;""");
+                INNER JOIN items ON inventory.item_id = items.item_id
+                ORDER BY inventory.dept_id, items.item_name;""");
             } else {
                 statement = connection.prepareStatement("""
                 SELECT items.item_name, inventory.amount
@@ -140,7 +142,7 @@ public class DatabaseConnection {
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                if (hasDepartment) {
+                if (nullDepartment) {
                     String dept = rs.getString("dept_id");
                     String item = rs.getString("item_name");
                     int amount = rs.getInt("amount");
@@ -271,6 +273,52 @@ public class DatabaseConnection {
             stmtInventory.setString(2, UserManager.getDepartment().toString());
             stmtInventory.setInt(3, amount);
             stmtInventory.executeUpdate();
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+        }
+    }
+
+    public static String[][] getUsers() {
+        try {
+            List<String[]> rows = new ArrayList<>();
+
+            PreparedStatement statement = connection.prepareStatement("""
+            SELECT email, user_level, CONCAT(users.first_name, ' ', users.last_name) AS full_name, dept_id 
+            FROM `users` ORDER BY user_level DESC, full_name""");
+
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                String email = rs.getString("email");
+                String userLevel = rs.getString("user_level");
+                String name = rs.getString("full_name");
+                String department = rs.getString("dept_id");
+
+                rows.add(new String[]{email, userLevel, name, department == null ? "NONE" : department});
+            }
+
+            return rows.toArray(new String[0][]);
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+            return null;
+        }
+    }
+
+    public static void createAccount(String firstName, String lastName, String email, String password, UserManager.UserLevel userLevel, Department department) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("""
+            INSERT INTO users (user_uuid, first_name, last_name, email, password, user_level, dept_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)""");
+            statement.setString(1, UUID.randomUUID().toString());
+            statement.setString(2, firstName);
+            statement.setString(3, lastName);
+            statement.setString(4, email);
+            statement.setString(5, Security.encrypt(password));
+            statement.setString(6, userLevel.toString());
+            if (department == null) statement.setNull(7, java.sql.Types.VARCHAR);
+            else statement.setString(7, department.toString());
+
+            statement.executeUpdate();
         } catch (SQLException e) {
             Utilities.sendFatalError(e);
         }
