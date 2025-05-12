@@ -1,7 +1,7 @@
 package dev.gracco.inventorium.frontend.pages;
 
 import dev.gracco.inventorium.connection.DatabaseConnection;
-import dev.gracco.inventorium.connection.DatabaseManager;
+import dev.gracco.inventorium.connection.UserManager;
 import dev.gracco.inventorium.frontend.Theme;
 import dev.gracco.inventorium.frontend.swing.JButtonRounded;
 import dev.gracco.inventorium.frontend.swing.JPanelImage;
@@ -72,7 +72,7 @@ public class LoginWindow extends JFrame {
                 return;
             }
 
-            if (DatabaseManager.login(this, email, password)) {
+            if (UserManager.login(this, email, password)) {
                 dispose();
                 new MainWindow();
             }

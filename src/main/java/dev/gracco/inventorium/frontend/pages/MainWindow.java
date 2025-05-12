@@ -1,7 +1,7 @@
 package dev.gracco.inventorium.frontend.pages;
 
 import dev.gracco.inventorium.connection.DatabaseConnection;
-import dev.gracco.inventorium.connection.DatabaseManager;
+import dev.gracco.inventorium.connection.UserManager;
 import dev.gracco.inventorium.frontend.Theme;
 import dev.gracco.inventorium.frontend.swing.JButtonRounded;
 import dev.gracco.inventorium.frontend.swing.JPanelImage;
@@ -15,20 +15,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.UIManager;
-import java.awt.Color;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Insets;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Map;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -54,37 +51,52 @@ public class MainWindow extends JFrame {
     private JPanel innerSettings;
     private JLabel welcomeTitle;
     private JPanel inventoryDisplay;
-    private JButton button1;
-    private JButton button2;
+    private JButton searchButtonHome;
     private JTable homeTable;
-    private JPanel designImage;
+    private JLabel homeTableLabel;
+    private JScrollPane homeScrollPane;
+    private JTable logsHeadTable;
+    private JTable requestHeadTable;
+    private JButton reloadRequests;
+    private JButton previousLogs;
+    private JButton nextLogs;
+    private JButton submitRequest;
+    private JLabel labelRequest;
+    private JScrollPane requestPane;
+    private JTextArea requestTextArea;
+    private JLabel labelHeadRequest;
+    private JScrollPane requestHeadPane;
+    private JLabel labelLogsHead;
+    private JScrollPane logsHeadPane;
+    private JPanel requestPanel;
+    private JLabel welcomeDept;
+    private JTextField searchInventoryHome;
 
     public MainWindow(){
         setContentPane(mainPanel);
         setFontRecursively(this, Theme.REGULAR.deriveFont(20f));
-        UIManager.put("TabbedPane.focus", new Color(0, 0, 0, 0));
         setupSettings();
         //TEMP
         setupAdmin();
         setupHead();
         setupHome();
-        switch (DatabaseManager.getLevel()) {
-            case ADMIN -> {
-                setupAdmin();
-                tabs.remove(1); // Head
-                tabs.remove(0); // User
-            }
-            case HEAD -> {
-                setupHead();
-                setupHome();
-                tabs.remove(2); // Admin
-            }
-            case USER -> {
-                setupHome();
-                tabs.remove(2); // Admin
-                tabs.remove(1); // Head
-            }
-        }
+        //switch (DatabaseManager.getLevel()) {
+        //    case ADMIN -> {
+        //        setupAdmin();
+        //        tabs.remove(1); // Head
+        //        tabs.remove(0); // User
+        //    }
+        //    case HEAD -> {
+        //        setupHead();
+        //        setupHome();
+        //        tabs.remove(2); // Admin
+        //    }
+        //    case USER -> {
+        //        setupHome();
+        //        tabs.remove(2); // Admin
+        //        tabs.remove(1); // Head
+        //    }
+        //}
 
         tabs.setBackground(Theme.COLOR_BACKGROUND);
         tabs.setUI(new JTabbedPaneUI());
@@ -99,24 +111,14 @@ public class MainWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e){
-                askLogout();
+                logoutButton.doClick();
             }
         });
-        setMinimumSize(new Dimension(700, 700));
-        setSize(700, 700);
+        setMinimumSize(new Dimension(1000, 700));
+        setSize(1000, 700);
         setLocationRelativeTo(null);
         setResizable(true);
         setVisible(true);
-    }
-
-    private void askLogout(){
-        int choice = JOptionPane.showConfirmDialog(MainWindow.this, "Are you sure you want to log out?", "Log out", JOptionPane.YES_NO_OPTION);
-
-        if (choice == JOptionPane.YES_OPTION) {
-            dispose();
-            DatabaseManager.logout();
-            new LoginWindow();
-        }
     }
 
     private static void setFontRecursively(Container container, Font font) {
@@ -129,7 +131,6 @@ public class MainWindow extends JFrame {
     }
 
     private void setupSettings(){
-        System.out.println(DatabaseManager.getUserUUID().toString());
         tabSettings.setBackground(Theme.COLOR_BACKGROUND);
         innerSettings.setBackground(Theme.COLOR_BACKGROUND);
 
@@ -188,10 +189,13 @@ public class MainWindow extends JFrame {
         });
 
         JButtonRounded.beautify(logoutButton, "Log out");
-        logoutButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                askLogout();
+        logoutButton.addActionListener(e -> {
+            int choice = JOptionPane.showConfirmDialog(MainWindow.this, "Are you sure you want to log out?", "Log out", JOptionPane.YES_NO_OPTION);
+
+            if (choice == JOptionPane.YES_OPTION) {
+                dispose();
+                UserManager.logout();
+                new LoginWindow();
             }
         });
     }
@@ -202,19 +206,65 @@ public class MainWindow extends JFrame {
 
     private void setupHead(){
         tabHead.setBackground(Theme.COLOR_BACKGROUND);
+
+        //Requests
+
+        //Logs
     }
 
     private void setupHome(){
         tabHome.setBackground(Theme.COLOR_BACKGROUND);
         welcomeTitle.setFont(Theme.BOLD.deriveFont(22f));
-        welcomeTitle.setText("Welcome, Gracco Aloba");
+        welcomeTitle.setText("Welcome, " + UserManager.getFirstName() + " " + UserManager.getLastName());
+        welcomeDept.setText(UserManager.getDepartment().getFullName());
 
-        Utilities.populateTable(homeTable, Map.of("bruh1", "bruh1", "bru2", "bruh2", "bruh3", "bruh3","bruh4", "bruh4"), new String[]{"ska", "doosh"});
+        // Inventory
+        homeTableLabel.setFont(Theme.BOLD.deriveFont(22f));
+        homeTableLabel.setText(UserManager.getDepartment().toString() + " Inventory");
+        searchButtonHome.setFocusable(false);
+        searchButtonHome.addActionListener(e -> {
+            for (int row = 0; row < homeTable.getRowCount(); row++) {
+                Object value = homeTable.getValueAt(row, 0);
+                if (value != null && value.toString().toLowerCase().contains(searchInventoryHome.getText().toLowerCase())) {
+                    homeTable.changeSelection(row, 0, false, false);
+                    return; // stop after first match
+                }
+            }
+        });
+        searchInventoryHome.addActionListener(e -> searchButtonHome.doClick());
+
+        Utilities.populateTable(homeTable, DatabaseConnection.getItems(DatabaseConnection.Department.CCS), new String[]{"Item Name", "Amount"});
+        homeTable.setRowHeight(homeTable.getFontMetrics(homeTable.getFont()).getHeight() + 4);
+        homeTable.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
+        homeTable.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
+        homeTable.setFont(Theme.REGULAR.deriveFont(14f));
+        searchButtonHome.setText("Search");
+
+        new JTextFieldPrompt("Search item", searchInventoryHome);
+
+        // Request
+        requestTextArea.setLineWrap(true);
+        requestTextArea.setWrapStyleWord(true);
+        requestTextArea.setFont(Theme.REGULAR.deriveFont(14f));
+        submitRequest.addActionListener(e -> {
+            if (requestTextArea.getText().isEmpty()) {
+                Utilities.sendError(MainWindow.this, "Your request is empty!");
+                return;
+            }
+
+            DatabaseConnection.createRequest(requestTextArea.getText());
+            requestTextArea.setText("");
+            Utilities.sendSuccess(MainWindow.this, "Successfully submitted request to your department head!");
+        });
+
+        JButtonRounded.beautify(submitRequest, "Send Request");
+        labelRequest.setText("Send Request to Department Head");
     }
 
     private void createUIComponents() {
-        UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
+        inventoryDisplay = new JPanelImage(Theme.HOME_DESIGN.getImage());
         settingsImage = new JPanelImage(Theme.SETTINGS_DESIGN.getImage());
+        submitRequest = new JButtonRounded();
         submitPassButton = new JButtonRounded();
         logoutButton = new JButtonRounded();
     }

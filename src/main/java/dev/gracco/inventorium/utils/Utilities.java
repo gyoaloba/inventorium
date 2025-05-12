@@ -3,7 +3,9 @@ package dev.gracco.inventorium.utils;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import java.util.Map;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 public class Utilities {
     public static void sendError(String message) {
@@ -28,17 +30,20 @@ public class Utilities {
         System.exit(1);
     }
 
-    public static <K, V> void populateTable(JTable table, Map<K, V> map, String[] columnNames) {
-        Object[][] data = new Object[map.size()][2];
+    public static void populateTable(JTable table, Object[][]  data, String[] columnNames) {
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 
-        int i = 0;
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            data[i][0] = entry.getKey();
-            data[i][1] = entry.getValue();
-            i++;
+        table.setModel(new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        });
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
-
-        table.setModel(new javax.swing.table.DefaultTableModel(data, columnNames));
     }
 
 }

@@ -3,8 +3,10 @@ package dev.gracco.inventorium.frontend;
 import dev.gracco.inventorium.utils.Utilities;
 
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 import java.util.Objects;
 
 public class Theme {
@@ -27,7 +29,8 @@ public class Theme {
     // Images
     public static final ImageIcon ICON_DARK = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/icon.png")));
     public static final ImageIcon BACKGROUND_LOGIN = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/bg-login.png")));
-    public static final ImageIcon SETTINGS_DESIGN = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/settings_design.png")));
+    public static final ImageIcon SETTINGS_DESIGN = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/design-settings.png")));
+    public static final ImageIcon HOME_DESIGN = new ImageIcon(Objects.requireNonNull(Theme.class.getResource("/images/design-home.png")));
 
     static {
         try {
@@ -38,5 +41,17 @@ public class Theme {
             Utilities.sendFatalError(e);
             throw new ExceptionInInitializerError(e);
         }
+    }
+
+    public static void initialize() {
+        UIManager.put("TabbedPane.focus", new Color(0, 0, 0, 0));
+        UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
+
+        UIManager.put("OptionPane.background", COLOR_BACKGROUND);
+        UIManager.put("Panel.background", COLOR_BACKGROUND);
+        UIManager.put("OptionPane.messageFont", REGULAR.deriveFont(18f));
+        UIManager.put("OptionPane.buttonFont", REGULAR.deriveFont(18f));
+        UIManager.put("Button.font", REGULAR.deriveFont(16f));
+        UIManager.put("Button.background", COLOR_BACKGROUND);
     }
 }
