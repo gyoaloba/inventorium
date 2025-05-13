@@ -24,8 +24,12 @@ public class JTextFieldPrompt extends JLabel implements FocusListener, DocumentL
     private final JTextComponent component;
     private final Document document;
 
-    @Getter @Setter private Show show;
-    @Getter @Setter private boolean showPromptOnce;
+    @Getter
+    @Setter
+    private Show show;
+    @Getter
+    @Setter
+    private boolean showPromptOnce;
     private int focusLost;
 
     public JTextFieldPrompt(String text, JTextComponent component) {
@@ -51,19 +55,11 @@ public class JTextFieldPrompt extends JLabel implements FocusListener, DocumentL
         checkForPrompt();
     }
 
-    //public void changeAlpha(float alpha) {
-    //    changeAlpha((int) (alpha * 255));
-    //}
-
     public void changeAlpha(int alpha) {
         alpha = Math.min(255, Math.max(0, alpha));
         Color fg = getForeground();
         setForeground(new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), alpha));
     }
-
-    //public void changeStyle(int style) {
-    //    setFont(getFont().deriveFont(style));
-    //}
 
     private void checkForPrompt() {
         if (document.getLength() > 0) {

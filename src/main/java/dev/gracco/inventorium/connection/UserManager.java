@@ -14,11 +14,17 @@ public class UserManager {
         USER, HEAD, ADMIN
     }
 
-    @Getter private static UserLevel level = UserLevel.USER;
-    @Getter private static UUID userUUID  = UUID.fromString("539d5d36-7d48-48ff-8b5f-5bbf94946ce9");
-    @Getter private static String lastName = "Amba";
-    @Getter private static String firstName = "James";
-    @Getter @Nullable private static DatabaseConnection.Department department = DatabaseConnection.Department.CCS;
+    @Getter
+    private static UserLevel level;
+    @Getter
+    private static UUID userUUID;
+    @Getter
+    private static String lastName;
+    @Getter
+    private static String firstName;
+    @Getter
+    @Nullable
+    private static DatabaseConnection.Department department;
 
     public static boolean login(JFrame frame, String email, String password) {
         ResultSet resultSet = DatabaseConnection.getLoginResultSet(email, password);
@@ -35,14 +41,14 @@ public class UserManager {
 
             String resultDepartment = resultSet.getString("dept_id");
             if (resultDepartment != null) department = DatabaseConnection.Department.valueOf(resultDepartment);
-        } catch (SQLException e){
+        } catch (SQLException e) {
             Utilities.sendFatalError(e);
         }
 
         return true;
     }
 
-    public static void logout(){
+    public static void logout() {
         level = null;
         userUUID = null;
         lastName = null;

@@ -27,6 +27,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
@@ -105,31 +107,27 @@ public class MainWindow extends JFrame {
     private JLabel labelAdminUsers;
     private JLabel labelAdminInventory;
 
-    public MainWindow(){
+    public MainWindow() {
         setContentPane(mainPanel);
         setFontRecursively(this, Theme.REGULAR.deriveFont(20f));
         setupSettings();
-        //TEMP
-        setupAdmin();
-        setupHead();
-        setupHome();
-        //switch (DatabaseManager.getLevel()) {
-        //    case ADMIN -> {
-        //        setupAdmin();
-        //        tabs.remove(1); // Head
-        //        tabs.remove(0); // User
-        //    }
-        //    case HEAD -> {
-        //        setupHead();
-        //        setupHome();
-        //        tabs.remove(2); // Admin
-        //    }
-        //    case USER -> {
-        //        setupHome();
-        //        tabs.remove(2); // Admin
-        //        tabs.remove(1); // Head
-        //    }
-        //}
+        switch (UserManager.getLevel()) {
+            case ADMIN -> {
+                setupAdmin();
+                tabs.remove(1); // Head
+                tabs.remove(0); // User
+            }
+            case HEAD -> {
+                setupHead();
+                setupHome();
+                tabs.remove(2); // Admin
+            }
+            case USER -> {
+                setupHome();
+                tabs.remove(2); // Admin
+                tabs.remove(1); // Head
+            }
+        }
 
         tabs.setBackground(Theme.COLOR_BACKGROUND);
         tabs.setUI(new JTabbedPaneUI());
@@ -143,7 +141,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e){
+            public void windowClosing(WindowEvent e) {
                 logoutButton.doClick();
             }
         });
@@ -163,7 +161,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void setupSettings(){
+    private void setupSettings() {
         tabSettings.setBackground(Theme.COLOR_BACKGROUND);
         innerSettings.setBackground(Theme.COLOR_BACKGROUND);
 
@@ -193,9 +191,7 @@ public class MainWindow extends JFrame {
             if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
                 JOptionPane.showMessageDialog(MainWindow.this, "Password field is empty!");
                 return;
-            }
-
-            else if (oldPassword.length() < 8 || newPassword.length() < 8 || confirmPassword.length() < 8) {
+            } else if (oldPassword.length() < 8 || newPassword.length() < 8 || confirmPassword.length() < 8) {
                 JOptionPane.showMessageDialog(MainWindow.this, "Password must contain more than 8 characters!");
                 return;
             }
@@ -206,9 +202,7 @@ public class MainWindow extends JFrame {
                 if (!newPassword.equals(confirmPassword)) {
                     Utilities.sendError(MainWindow.this, "Password and confirmation do not match! Try again.");
                     return;
-                }
-
-                else if (oldPassword.equals(newPassword)) {
+                } else if (oldPassword.equals(newPassword)) {
                     Utilities.sendError(MainWindow.this, "Your old password cannot be the same as your new one! Try again.");
                     return;
                 }
@@ -233,7 +227,7 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private void setupAdmin(){
+    private void setupAdmin() {
         tabAdmin.setBackground(Theme.COLOR_BACKGROUND);
 
         //Users
@@ -269,7 +263,7 @@ public class MainWindow extends JFrame {
         labelCreateAccount.setFont(Theme.BOLD.deriveFont(20f));
 
         labelFirstName.setText("First Name:");
-        new JTextFieldPrompt( "First Name", inputFirstName);
+        new JTextFieldPrompt("First Name", inputFirstName);
 
         labelLastName.setText("Last Name:");
         new JTextFieldPrompt("Last Name", inputLastName);
@@ -297,21 +291,24 @@ public class MainWindow extends JFrame {
             String password = new String(inputPassword.getPassword());
             UserManager.UserLevel userLevel = (UserManager.UserLevel) userLevelCombo.getSelectedItem();
             DatabaseConnection.Department department;
-            try { department = DatabaseConnection.Department.valueOf(departmentCombo.getSelectedItem().toString()); }
-            catch (ClassCastException exc) { department = null; }
+            try {
+                department = DatabaseConnection.Department.valueOf(departmentCombo.getSelectedItem().toString());
+            } catch (ClassCastException exc) {
+                department = null;
+            }
 
-            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()){
+            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Utilities.sendError(MainWindow.this, "You cannot leave any field as blank!");
                 return;
             }
-            
+
             int choice = JOptionPane.showConfirmDialog(MainWindow.this,
                     "Create this account?\n\nFirst Name: " + firstName +
                             "\nLast Name: " + lastName +
                             "\nEmail: " + email +
                             "\nPassword: " + password +
                             "\nUser Level: " + userLevel.toString() +
-                            "\nDepartment: " + (department == null? "NONE" : department.toString())
+                            "\nDepartment: " + (department == null ? "NONE" : department.toString())
                     , "Create Account", JOptionPane.YES_NO_OPTION);
 
             if (choice == JOptionPane.YES_OPTION) {
@@ -325,7 +322,7 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private void setupHead(){
+    private void setupHead() {
         tabHead.setBackground(Theme.COLOR_BACKGROUND);
 
         //Requests
@@ -341,6 +338,23 @@ public class MainWindow extends JFrame {
         requestHeadTable.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
         requestHeadTable.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
         requestHeadTable.setFont(Theme.REGULAR.deriveFont(14f));
+        requestHeadTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && !e.isConsumed()) {
+                    int row = requestHeadTable.rowAtPoint(e.getPoint());
+                    if (row < 0) return;
+                    int requestId = Integer.parseInt((String) requestHeadTable.getValueAt(row, 0));
+
+                    String[] data = DatabaseConnection.getRequest(requestId);
+                    JOptionPane.showMessageDialog(MainWindow.this,
+                            "Created in: " + data[0] +
+                                    "\nMade by: " + data[1] +
+                            "\n\nRequest: \n" + Utilities.splitIntoLines(data[2], 20),
+                            "Request No. " + requestId, JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
 
         //Update
         labelUpdate.setText("Update Item");
@@ -377,9 +391,7 @@ public class MainWindow extends JFrame {
             if (id.isEmpty() || id == null) {
                 Utilities.sendError(MainWindow.this, "Item name cannot be empty!");
                 return;
-            }
-
-            else if (DatabaseConnection.getItems().contains(id)){
+            } else if (DatabaseConnection.getItems().contains(id)) {
                 Utilities.sendError(MainWindow.this, "Item already exists!");
                 return;
             }
@@ -398,7 +410,7 @@ public class MainWindow extends JFrame {
 
     }
 
-    private void setupHome(){
+    private void setupHome() {
         tabHome.setBackground(Theme.COLOR_BACKGROUND);
         welcomeTitle.setFont(Theme.BOLD.deriveFont(22f));
         welcomeTitle.setText("Welcome, " + UserManager.getFirstName() + " " + UserManager.getLastName());
@@ -421,7 +433,7 @@ public class MainWindow extends JFrame {
 
         Utilities.populateTable(homeTable, DatabaseConnection.getItems(DatabaseConnection.Department.CCS), new String[]{"Item Name", "Amount"});
         homeTable.setRowHeight(homeTable.getFontMetrics(homeTable.getFont()).getHeight() + 4);
-        homeTable.getTableHeader().setBackground(Theme.COLOR_PRIMARY);  // Set header background color
+        homeTable.getTableHeader().setBackground(Theme.COLOR_PRIMARY);
         homeTable.getTableHeader().setFont(Theme.BOLD.deriveFont(18f));
         homeTable.setFont(Theme.REGULAR.deriveFont(14f));
         searchButtonHome.setText("Search");

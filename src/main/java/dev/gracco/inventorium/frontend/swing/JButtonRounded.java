@@ -39,7 +39,7 @@ public class JButtonRounded extends JButton {
     }
 
     // Has to be static cuz I can't directly assign this class to the JButton
-    public static void beautify(JButton button, String label){
+    public static void beautify(JButton button, String label) {
         button.setText(label);
         button.setFont(Theme.REGULAR.deriveFont(20f));
         button.setBackground(Theme.COLOR_PRIMARY);

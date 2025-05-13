@@ -22,7 +22,8 @@ import java.util.UUID;
 
 public class DatabaseConnection {
 
-    @Getter public enum Department {
+    @Getter
+    public enum Department {
         CBE, CCS, CEA, COA, CWTS, ENG, GRAD, MAPD;
 
         @Setter
@@ -65,8 +66,11 @@ public class DatabaseConnection {
     }
 
     public static void close() {
-        try { connection.close(); }
-        catch (SQLException e) { Utilities.sendFatalError(e); }
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+        }
     }
 
     @Nullable
@@ -86,7 +90,7 @@ public class DatabaseConnection {
         }
     }
 
-    public static boolean setPassword(JFrame frame, String oldPassword, String newPassword){
+    public static boolean setPassword(JFrame frame, String oldPassword, String newPassword) {
         try {
             PreparedStatement selectStatement = connection.prepareStatement("SELECT password FROM users WHERE user_uuid = ?");
             selectStatement.setString(1, UserManager.getUserUUID().toString());
@@ -126,16 +130,16 @@ public class DatabaseConnection {
 
             if (nullDepartment) {
                 statement = connection.prepareStatement("""
-                SELECT inventory.dept_id, items.item_name, inventory.amount
-                FROM inventory
-                INNER JOIN items ON inventory.item_id = items.item_id
-                ORDER BY inventory.dept_id, items.item_name;""");
+                        SELECT inventory.dept_id, items.item_name, inventory.amount
+                        FROM inventory
+                        INNER JOIN items ON inventory.item_id = items.item_id
+                        ORDER BY inventory.dept_id, items.item_name;""");
             } else {
                 statement = connection.prepareStatement("""
-                SELECT items.item_name, inventory.amount
-                FROM inventory
-                INNER JOIN items ON inventory.item_id = items.item_id
-                WHERE dept_id = ?;""");
+                        SELECT items.item_name, inventory.amount
+                        FROM inventory
+                        INNER JOIN items ON inventory.item_id = items.item_id
+                        WHERE dept_id = ?;""");
                 statement.setString(1, department.toString());
             }
 
@@ -179,9 +183,9 @@ public class DatabaseConnection {
             List<String[]> rows = new ArrayList<>();
 
             PreparedStatement statement = connection.prepareStatement("""
-            SELECT requests.request_id, requests.created_at, CONCAT(users.first_name, ' ', users.last_name) AS full_name
-            FROM requests INNER JOIN users ON requests.user_uuid = users.user_uuid
-            WHERE requests.dept_id = ? ORDER BY request_id DESC;""");
+                    SELECT requests.request_id, requests.created_at, CONCAT(users.first_name, ' ', users.last_name) AS full_name
+                    FROM requests INNER JOIN users ON requests.user_uuid = users.user_uuid
+                    WHERE requests.dept_id = ? ORDER BY request_id DESC;""");
 
             statement.setString(1, UserManager.getDepartment().toString());
 
@@ -207,7 +211,7 @@ public class DatabaseConnection {
             PreparedStatement statement = connection.prepareStatement("SELECT item_name FROM items ORDER BY item_name");
             ResultSet resultSet = statement.executeQuery();
 
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 items.add(resultSet.getString("item_name"));
             }
 
@@ -239,11 +243,11 @@ public class DatabaseConnection {
     public static void setItemCount(String item, int amount) {
         try {
             PreparedStatement statement = connection.prepareStatement("""
-                    UPDATE inventory
-                    INNER JOIN items ON inventory.item_id = items.item_id
-                    SET inventory.amount = ?
-                    WHERE items.item_name = ? AND inventory.dept_id = ?;
-            """);
+                            UPDATE inventory
+                            INNER JOIN items ON inventory.item_id = items.item_id
+                            SET inventory.amount = ?
+                            WHERE items.item_name = ? AND inventory.dept_id = ?;
+                    """);
             statement.setString(1, String.valueOf(amount));
             statement.setString(2, item.toString().toUpperCase());
             statement.setString(3, UserManager.getDepartment().toString());
@@ -283,8 +287,8 @@ public class DatabaseConnection {
             List<String[]> rows = new ArrayList<>();
 
             PreparedStatement statement = connection.prepareStatement("""
-            SELECT email, user_level, CONCAT(users.first_name, ' ', users.last_name) AS full_name, dept_id 
-            FROM `users` ORDER BY user_level DESC, full_name""");
+                    SELECT email, user_level, CONCAT(users.first_name, ' ', users.last_name) AS full_name, dept_id 
+                    FROM `users` ORDER BY user_level DESC, full_name""");
 
             ResultSet rs = statement.executeQuery();
 
@@ -307,8 +311,8 @@ public class DatabaseConnection {
     public static void createAccount(String firstName, String lastName, String email, String password, UserManager.UserLevel userLevel, Department department) {
         try {
             PreparedStatement statement = connection.prepareStatement("""
-            INSERT INTO users (user_uuid, first_name, last_name, email, password, user_level, dept_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)""");
+                    INSERT INTO users (user_uuid, first_name, last_name, email, password, user_level, dept_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)""");
             statement.setString(1, UUID.randomUUID().toString());
             statement.setString(2, firstName);
             statement.setString(3, lastName);
@@ -321,6 +325,32 @@ public class DatabaseConnection {
             statement.executeUpdate();
         } catch (SQLException e) {
             Utilities.sendFatalError(e);
+        }
+    }
+
+    public static String[] getRequest(int request_id) {
+        try {
+            String[] data = new String[3];
+
+            PreparedStatement statement = connection.prepareStatement("""
+                    SELECT requests.created_at, CONCAT(users.first_name, ' ', users.last_name) AS full_name, requests.request
+                    FROM requests INNER JOIN users ON requests.user_uuid = users.user_uuid
+                    WHERE requests.request_id = ?;""");
+
+            statement.setString(1, String.valueOf(request_id));
+
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()) {
+                data[0] = DATE_FORMAT.format(rs.getTimestamp("created_at"));
+                data[1] = rs.getString("full_name");
+                data[2] = rs.getString("request");
+            }
+
+            return data;
+        } catch (SQLException e) {
+            Utilities.sendFatalError(e);
+            return null;
         }
     }
 }

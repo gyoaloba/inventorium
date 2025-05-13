@@ -30,7 +30,7 @@ public class Utilities {
         System.exit(1);
     }
 
-    public static void populateTable(JTable table, Object[][]  data, String[] columnNames) {
+    public static void populateTable(JTable table, Object[][] data, String[] columnNames) {
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -45,5 +45,26 @@ public class Utilities {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
     }
+
+    public static String splitIntoLines(String text, int minChar) {
+        StringBuilder lineBuilder = new StringBuilder();
+        StringBuilder finalText = new StringBuilder();
+        String[] words = text.split(" ");
+        int currentIteration = 0;
+
+        for (String word : words) {
+            currentIteration++;
+            lineBuilder.append(word).append(" ");
+
+            if (lineBuilder.length() > minChar - 1 || currentIteration == words.length) {
+                finalText.append(lineBuilder.toString().trim()).append("\n");
+                lineBuilder.setLength(0);
+            }
+        }
+
+        return finalText.toString();
+    }
+
+
 
 }
